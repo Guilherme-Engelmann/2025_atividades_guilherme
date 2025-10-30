@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Tarefa - Kanban</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Cadastro de Tarefa</h1>
+      <nav>
+        <a href="index.html">Kanban</a>
+        <a href="usuarios.html">Cadastrar Usuário</a>
+      </nav>
+    </header>
+    <form id="taskForm">
+      <div class="form-group">
+        <label for="descricao">Descrição</label>
+        <textarea id="descricao" name="descricao" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="setor">Setor</label>
+        <input type="text" id="setor" name="setor" required>
+      </div>
+      <div class="form-group">
+        <label for="prioridade">Prioridade</label>
+        <select id="prioridade" name="prioridade" required>
+          <option value="baixa">Baixa</option>
+          <option value="media">Média</option>
+          <option value="alta">Alta</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="id_usuario">Usuário Responsável</label>
+        <select id="id_usuario" name="id_usuario" required></select>
+      </div>
+      <button type="submit" class="button">Cadastrar Tarefa</button>
+    </form>
+    <div id="msg" style="margin-top:20px;"></div>
+  </div>
+  <script>
+    async function loadUsers(){
+      const res = await fetch('../api/users.php');
+      const users = await res.json();
+      const select = document.getElementById('id_usuario');
+      select.innerHTML = users.map(u=>`<option value="${u.id_usuario}">${u.nome}</option>`).join('');
+    }
+    loadUsers();
+    document.getElementById('taskForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const descricao = this.descricao.value.trim();
+      const setor = this.setor.value.trim();
+      const prioridade = this.prioridade.value;
+      const id_usuario = this.id_usuario.value;
+      if(!descricao || !setor || !prioridade || !id_usuario){
+        document.getElementById('msg').textContent = 'Preencha todos os campos.';
+        return;
+      }
+      const res = await fetch('../api/create_task.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({descricao, setor, prioridade, id_usuario})
+      });
+      const data = await res.json();
+      if(data.success){
+        document.getElementById('msg').textContent = 'Tarefa cadastrada com sucesso';
+        this.reset();
+      }else{
+        document.getElementById('msg').textContent = data.error || 'Erro ao cadastrar.';
+      }
+    });
+  </script>
+</body>
+</html>
