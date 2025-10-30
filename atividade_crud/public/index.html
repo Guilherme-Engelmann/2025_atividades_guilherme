@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Kanban - Gerenciador de Tarefas</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Quadro Kanban</h1>
+      <nav>
+        <a href="usuarios.html">Cadastrar Usuário</a>
+        <a href="tarefas.html">Cadastrar Tarefa</a>
+      </nav>
+    </header>
+    <div id="kanban" class="kanban">
+      <div class="column" id="col-afazer" data-status="a fazer">
+        <h2>A Fazer</h2>
+      </div>
+      <div class="column" id="col-fazendo" data-status="fazendo">
+        <h2>Fazendo</h2>
+      </div>
+      <div class="column" id="col-pronto" data-status="pronto">
+        <h2>Pronto</h2>
+      </div>
+    </div>
+  </div>
+  <script>
+    async function renderKanban(){
+      const res = await fetch('../api/tasks.php');
+      const tasks = await res.json();
+      const cols = {
+        'a fazer': document.getElementById('col-afazer'),
+        'fazendo': document.getElementById('col-fazendo'),
+        'pronto': document.getElementById('col-pronto')
+      };
+      Object.values(cols).forEach(c=>c.innerHTML = '<h2>'+c.querySelector('h2').textContent+'</h2>');
+      tasks.forEach(t=>{
+        const card = document.createElement('div');
+        card.className = 'card priority-'+t.prioridade.replace(' ','');
+        card.draggable = true;
+        card.dataset.id = t.id_tarefa;
+        card.innerHTML = `<strong>${t.descricao}</strong><div class=\"meta\">${t.setor} — ${t.nome} — Prioridade: ${t.prioridade}</div><div class=\"actions\"><button class=\"button\" onclick=\"editTask(${t.id_tarefa})\">Editar</button><button class=\"button secondary\" onclick=\"deleteTask(${t.id_tarefa})\">Excluir</button></div>`;
+        card.addEventListener('dragstart',dragStart);
+        cols[t.status].appendChild(card);
+      });
+    }
+    function dragStart(e){
+      e.dataTransfer.setData('text/plain', e.target.dataset.id);
+    }
+    function allowDrop(e){
+      e.preventDefault();
+      e.currentTarget.classList.add('drag-over');
+    }
+    function leaveDrop(e){ e.currentTarget.classList.remove('drag-over'); }
+    async function dropTask(e, status){
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+      const id = e.dataTransfer.getData('text/plain');
+      await fetch('../api/update_task.php',{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({id_tarefa:id,status})
+      });
+      await renderKanban();
+    }
+    async function editTask(id){
+      const res = await fetch('../api/task.php?id='+id);
+      const t = await res.json();
+      const newDesc = prompt('Descrição', t.descricao);
+      if(newDesc==null) return;
+      await fetch('../api/update_task.php',{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({id_tarefa:id,descricao:newDesc})
+      });
+      await renderKanban();
+    }
+    async function deleteTask(id){
+      if(!confirm('Confirmar exclusão?')) return;
+      await fetch('../api/delete_task.php',{
+        method:'DELETE',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({id_tarefa:id})
+      });
+      await renderKanban();
+    }
+    window.addEventListener('DOMContentLoaded',()=>{
+      renderKanban();
+      ['col-afazer','col-fazendo','col-pronto'].forEach(id=>{
+        const el = document.getElementById(id);
+        el.addEventListener('dragover',allowDrop);
+        el.addEventListener('dragleave',leaveDrop);
+        el.addEventListener('drop', (e)=> dropTask(e, el.dataset.status));
+      });
+    });
+  </script>
+</body>
+</html>
