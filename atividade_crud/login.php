@@ -6,15 +6,19 @@ $msg = '';
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $email = trim($_POST['email'] ?? '');
     $senha = $_POST['senha'] ?? '';
-    $stmt = $pdo->prepare('SELECT id, senha FROM usuarios WHERE email = ?');
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
-    if($user && password_verify($senha, $user['senha'])){
-        $_SESSION['usuario_id'] = $user['id'];
-        header('Location: tarefas/listar.php');
-        exit;
+    if(!$email || !$senha){
+        $msg = 'Preencha todos os campos.';
     }else{
-        $msg = 'Login inválido.';
+        $stmt = $pdo->prepare('SELECT id, senha FROM usuarios WHERE email = ?');
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        if($user && password_verify($senha, $user['senha'])){
+            $_SESSION['usuario_id'] = $user['id'];
+            header('Location: tarefas/listar.php');
+            exit;
+        }else{
+            $msg = 'Email ou senha inválidos.';
+        }
     }
 }
 include 'includes/header.php';

@@ -1,0 +1,21 @@
+body{font-family:Arial,sans-serif;background:#f4f6f8;margin:0;padding:0}
+.container{max-width:1100px;margin:30px auto;padding:20px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+header h1{margin:0;font-size:20px}
+nav a{margin-left:10px;text-decoration:none;color:#2b6cb0}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;margin-bottom:6px;font-weight:600}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px}
+.button{background:#2b6cb0;color:#fff;padding:8px 12px;border:none;border-radius:4px;cursor:pointer}
+.button.secondary{background:#4a5568}
+.kanban{display:flex;gap:16px}
+.column{flex:1;background:#f8fafc;padding:12px;border-radius:6px;min-height:300px}
+.column h2{margin-top:0;font-size:16px}
+.card{background:#fff;padding:10px;border-radius:6px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:grab}
+.card .meta{font-size:12px;color:#666;margin-top:6px}
+.card .actions{margin-top:8px;display:flex;gap:6px}
+.priority-baixa{border-left:6px solid #48bb78}
+.priority-media{border-left:6px solid #f6ad55}
+.priority-alta{border-left:6px solid #f56565}
+.drag-over{background:#e6f7ff}
+@media(max-width:800px){.kanban{flex-direction:column}}
